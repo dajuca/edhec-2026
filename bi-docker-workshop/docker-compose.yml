@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: bi_postgres
+    environment:
+      POSTGRES_DB: sales
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d sales"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./api
+    container_name: bi_api
+    environment:
+      DB_HOST: postgres
+      DB_NAME: sales
+      DB_USER: admin
+      DB_PASSWORD: admin
+      DB_PORT: "5432"
+    ports:
+      - "18000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./:/workspaces/bi-docker-workshop
+
+volumes:
+  pgdata:
