@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "19000:8000"
+    volumes:
+      # Mount service account key (read-only)
+      - ./secrets/bq-sa.json:/secrets/bq-sa.json:ro
+      # Persist models on your host
+      - ./models:/app/models
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/bq-sa.json
